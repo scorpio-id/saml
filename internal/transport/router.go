@@ -9,12 +9,13 @@ import (
 )
 
 // NewRouter creates a new mux router with applied SAML IDP configurations
-func NewRouter(cfg config.Config) (*mux.Router) {
+// TODO - fix the awful naming on idp
+func NewRouter(cfg config.Config, idp *idp.IDP) (*mux.Router) {
 
 	// create gorilla mux router
 	router := mux.NewRouter()
 
-	router.HandleFunc("/idp", idp.HelloFromIDP).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/cert", idp.GetCert).Methods(http.MethodGet, http.MethodOptions)
 
 	return router
 }
