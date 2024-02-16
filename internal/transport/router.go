@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -10,12 +11,18 @@ import (
 
 // NewRouter creates a new mux router with applied SAML IDP configurations
 // TODO - fix the awful naming on idp
-func NewRouter(cfg config.Config, idp *idp.IDP) (*mux.Router) {
+func NewRouter(cfg config.Config) *mux.Router {
 
 	// create gorilla mux router
 	router := mux.NewRouter()
 
-	router.HandleFunc("/cert", idp.GetCert).Methods(http.MethodGet, http.MethodOptions)
+	// create an IDP
+	idp, err := idp.NewIDP(&cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	router.HandleFunc("/certificate", idp.CertificateHandler).Methods(http.MethodGet, http.MethodOptions)
 
 	return router
 }

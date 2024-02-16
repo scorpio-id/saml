@@ -3,8 +3,8 @@ server:
   host: "http://127.0.0.1"
   port: 8084
 pki:
-  enabled: false
-  url: "http://localhost:8081"
+  enabled: true
+  url: "http://localhost:8081/certificate"
   sans:
     - "idp.scorpio.io"
 oauth:

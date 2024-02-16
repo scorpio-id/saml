@@ -55,7 +55,6 @@ func NewIDP(config *config.Config) (*IDP, error) {
 	}, nil
 }
 
-func (idp *IDP) GetCert(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
+func (idp *IDP) CertificateHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(idp.X509))
 }
