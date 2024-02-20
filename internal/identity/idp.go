@@ -47,6 +47,7 @@ func NewIDP(config *config.Config) (*IDP, error) {
 		}
 	} else {
 		// FIXME use a self-signed certificate if PKI is not enabled
+		// https://go.dev/src/crypto/tls/generate_cert.go
 	}
 	return &IDP {
 		X509: cert,
