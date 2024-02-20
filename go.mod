@@ -8,6 +8,13 @@ require (
 )
 
 require (
+	github.com/beevik/etree v1.3.0
+	github.com/russellhaering/goxmldsig v1.4.0
+)
+
+require github.com/jonboulle/clockwork v0.2.2 // indirect
+
+require (
 	github.com/google/uuid v1.4.0 // indirect
 	github.com/scorpio-id/pki v0.1.0
 	golang.org/x/crypto v0.16.0 // indirect

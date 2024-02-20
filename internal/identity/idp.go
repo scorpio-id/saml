@@ -1,4 +1,4 @@
-package idp
+package identity
 
 import (
 	"crypto/rand"
@@ -46,7 +46,7 @@ func NewIDP(config *config.Config) (*IDP, error) {
 			return nil, err
 		}
 	} else {
-		// TODO use a self-signed certificate if PKI is not enabled
+		// FIXME use a self-signed certificate if PKI is not enabled
 	}
 	return &IDP {
 		X509: cert,

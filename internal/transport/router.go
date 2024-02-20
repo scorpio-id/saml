@@ -6,7 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/scorpio-id/saml/internal/config"
-	"github.com/scorpio-id/saml/internal/idp"
+	"github.com/scorpio-id/saml/internal/identity"
 )
 
 // NewRouter creates a new mux router with applied SAML IDP configurations
@@ -17,7 +17,7 @@ func NewRouter(cfg config.Config) *mux.Router {
 	router := mux.NewRouter()
 
 	// create an IDP
-	idp, err := idp.NewIDP(&cfg)
+	idp, err := identity.NewIDP(&cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
