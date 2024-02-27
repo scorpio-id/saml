@@ -3,6 +3,8 @@ package identity
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"net/http"
 
 	pki "github.com/scorpio-id/pki/pkg/client"
@@ -11,9 +13,10 @@ import (
 
 type IDP struct {
 	// TODO - X509 needs to be unmarshaled into an x509 cert
-	X509    string
-	private *rsa.PrivateKey
-	client  *pki.X509Client
+	leaf    		*x509.Certificate
+	intermediate 	*x509.Certificate
+	private 		*rsa.PrivateKey
+	client  		*pki.X509Client
 }
 
 func NewIDP(config *config.Config) (*IDP, error) {
@@ -48,14 +51,43 @@ func NewIDP(config *config.Config) (*IDP, error) {
 	} else {
 		// FIXME use a self-signed certificate if PKI is not enabled
 		// https://go.dev/src/crypto/tls/generate_cert.go
+		//
+		// Intermediate is nil when leaf is self signed
 	}
+
+	// certificate is given as PEM encoded string => turned into ASN.1 Encoded []Byte
+	leafBlock, rest := pem.Decode([]byte(cert))
+	interBlock, _ := pem.Decode([]byte(rest))
+
+	leaf, err :=x509.ParseCertificate(leafBlock.Bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	intermediate, err :=x509.ParseCertificate(interBlock.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	
 	return &IDP {
-		X509: cert,
+		leaf: leaf,
+		intermediate: intermediate,
 		private: private,
 		client: x509client,
 	}, nil
 }
 
 func (idp *IDP) CertificateHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(idp.X509))
+
+	block := pem.Block{
+		Type:  "CERTIFICATE",
+		Bytes: idp.intermediate.Raw,
+	}
+	pem.Encode(w, &block)
+
+	block = pem.Block{
+		Type:  "CERTIFICATE",
+		Bytes: idp.leaf.Raw,
+	}
+	pem.Encode(w, &block)
 }
