@@ -1,4 +1,4 @@
-package data
+package provider
 
 import (
 	"bytes"
@@ -11,7 +11,6 @@ import (
 	"github.com/russellhaering/goxmldsig/etreeutils"
 
 	"github.com/scorpio-id/saml/internal/format"
-	"github.com/scorpio-id/saml/internal/identity"
 )
 
 // RequestedAuthnContext represents the SAML object of the same name, an indication of the
@@ -62,7 +61,7 @@ type AuthnRequest struct {
 	ProviderName                   string `xml:",attr"`
 }
 
-// LogoutRequest  represents the SAML object of the same name, a request from an IDP
+// LogoutRequest represents the SAML object of the same name, a request from an IDP
 // to destroy a user's session.
 //
 // See http://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf
@@ -767,7 +766,7 @@ func (a *Assertion) Element() *etree.Element {
 	for _, attributeStatement := range a.AttributeStatements {
 		el.AddChild(attributeStatement.Element())
 	}
-	err := etreeutils.TransformExcC14n(el, identity.CanonicalizerPrefixList, false)
+	err := etreeutils.TransformExcC14n(el, CanonicalizerPrefixList, false)
 	if err != nil {
 		panic(err)
 	}
