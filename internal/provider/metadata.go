@@ -332,7 +332,7 @@ type IDPSSODescriptor struct {
 	NameIDMappingServices      []Endpoint  `xml:"NameIDMappingService"`
 	AssertionIDRequestServices []Endpoint  `xml:"AssertionIDRequestService"`
 	AttributeProfiles          []string    `xml:"AttributeProfile"`
-	Attributes                 []provider.Attribute `xml:"Attribute"`
+	Attributes                 []Attribute `xml:"Attribute"`
 }
 
 // SPSSODescriptor represents the SAML SPSSODescriptorType object.
@@ -362,7 +362,7 @@ type AttributeConsumingService struct {
 //
 // See http://docs.oasis-open.org/security/saml/v2.0/saml-metadata-2.0-os.pdf §2.4.4.2
 type RequestedAttribute struct {
-	provider.Attribute
+	Attribute
 	IsRequired *bool `xml:"isRequired,attr"`
 }
 
@@ -395,7 +395,7 @@ type AttributeAuthorityDescriptor struct {
 	AssertionIDRequestServices []Endpoint            `xml:"AssertionIDRequestService"`
 	NameIDFormats              []format.NameID       `xml:"NameIDFormat"`
 	AttributeProfiles          []string              `xml:"AttributeProfile"`
-	Attributes                 []provider.Attribute    `xml:"Attribute"`
+	Attributes                 []Attribute    `xml:"Attribute"`
 }
 
 // AffiliationDescriptor represents the SAML AffiliationDescriptor object.

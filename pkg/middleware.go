@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"net/http"
 
+	"github.com/scorpio-id/saml/internal/provider"
 	"github.com/scorpio-id/saml/internal/service"
 )
 
@@ -40,12 +41,12 @@ import (
 // SAML service provider already has a private key, we borrow that key
 // to sign the JWTs as well.
 type Middleware struct {
-	ServiceProvider service.ServiceProvider
+	ServiceProvider provider.ServiceProvider
 	OnError         func(w http.ResponseWriter, r *http.Request, err error)
 	Binding         string // either saml.HTTPPostBinding or saml.HTTPRedirectBinding
 	ResponseBinding string // either saml.HTTPPostBinding or saml.HTTPArtifactBinding
 	RequestTracker  service.RequestTracker
-	Session         SessionProvider
+	Session         service.SessionProvider
 }
 
 // ServeHTTP implements http.Handler and serves the SAML-specific HTTP endpoints
@@ -110,11 +111,11 @@ func (m *Middleware) RequireAccount(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, err := m.Session.GetSession(r)
 		if session != nil {
-			r = r.WithContext(ContextWithSession(r.Context(), session))
+			r = r.WithContext(service.ContextWithSession(r.Context(), session))
 			handler.ServeHTTP(w, r)
 			return
 		}
-		if err == ErrNoSession {
+		if err == service.ErrNoSession {
 			m.HandleStartAuthFlow(w, r)
 			return
 		}
@@ -138,10 +139,10 @@ func (m *Middleware) HandleStartAuthFlow(w http.ResponseWriter, r *http.Request)
 		binding = m.Binding
 		bindingLocation = m.ServiceProvider.GetSSOBindingLocation(binding)
 	} else {
-		binding = saml.HTTPRedirectBinding
+		binding = provider.HTTPRedirectBinding
 		bindingLocation = m.ServiceProvider.GetSSOBindingLocation(binding)
 		if bindingLocation == "" {
-			binding = saml.HTTPPostBinding
+			binding = provider.HTTPPostBinding
 			bindingLocation = m.ServiceProvider.GetSSOBindingLocation(binding)
 		}
 	}
@@ -162,7 +163,7 @@ func (m *Middleware) HandleStartAuthFlow(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if binding == saml.HTTPRedirectBinding {
+	if binding == provider.HTTPRedirectBinding {
 		redirectURL, err := authReq.Redirect(relayState, &m.ServiceProvider)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -172,7 +173,7 @@ func (m *Middleware) HandleStartAuthFlow(w http.ResponseWriter, r *http.Request)
 		w.WriteHeader(http.StatusFound)
 		return
 	}
-	if binding == saml.HTTPPostBinding {
+	if binding == provider.HTTPPostBinding {
 		w.Header().Add("Content-Security-Policy", ""+
 			"default-src; "+
 			"script-src 'sha256-AjPdJSbZmeWHnEc5ykvJFay8FTWeTeRbs9dutfZ0HqE='; "+
@@ -192,7 +193,7 @@ func (m *Middleware) HandleStartAuthFlow(w http.ResponseWriter, r *http.Request)
 }
 
 // CreateSessionFromAssertion is invoked by ServeHTTP when we have a new, valid SAML assertion.
-func (m *Middleware) CreateSessionFromAssertion(w http.ResponseWriter, r *http.Request, assertion *saml.Assertion, redirectURI string) {
+func (m *Middleware) CreateSessionFromAssertion(w http.ResponseWriter, r *http.Request, assertion *provider.Assertion, redirectURI string) {
 	if trackedRequestIndex := r.Form.Get("RelayState"); trackedRequestIndex != "" {
 		trackedRequest, err := m.RequestTracker.GetTrackedRequest(r, trackedRequestIndex)
 		if err != nil {
@@ -234,9 +235,9 @@ func (m *Middleware) CreateSessionFromAssertion(w http.ResponseWriter, r *http.R
 func RequireAttribute(name, value string) func(http.Handler) http.Handler {
 	return func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if session := SessionFromContext(r.Context()); session != nil {
+			if session := service.SessionFromContext(r.Context()); session != nil {
 				// this will panic if we have the wrong type of Session, and that is OK.
-				sessionWithAttributes := session.(SessionWithAttributes)
+				sessionWithAttributes := session.(service.SessionWithAttributes)
 				attributes := sessionWithAttributes.GetAttributes()
 				if values, ok := attributes[name]; ok {
 					for _, v := range values {

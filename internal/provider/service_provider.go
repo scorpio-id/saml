@@ -26,6 +26,7 @@ import (
 	"github.com/scorpio-id/saml/pkg/util"
 	"github.com/scorpio-id/saml/internal/format"
 	"github.com/scorpio-id/saml/internal/logger"
+	"github.com/scorpio-id/saml/internal/xmlenc"
 )
 
 // NameIDFormat is the format of the id
@@ -1113,8 +1114,8 @@ func (sp *ServiceProvider) validateSignature(el *etree.Element) error {
 
 	validationContext := dsig.NewDefaultValidationContext(&certificateStore)
 	validationContext.IdAttribute = "ID"
-	if Clock != nil {
-		validationContext.Clock = Clock
+	if util.Clock != nil {
+		validationContext.Clock = util.Clock
 	}
 
 	// Some SAML responses contain a RSAKeyValue element. One of two things is happening here:
@@ -1178,7 +1179,7 @@ func (sp *ServiceProvider) SignLogoutRequest(req *LogoutRequest) error {
 	}
 	signatureMethod := sp.SignatureMethod
 	signingContext := dsig.NewDefaultSigningContext(keyStore)
-	signingContext.Canonicalizer = dsig.MakeC14N10ExclusiveCanonicalizerWithPrefixList(canonicalizerPrefixList)
+	signingContext.Canonicalizer = dsig.MakeC14N10ExclusiveCanonicalizerWithPrefixList(CanonicalizerPrefixList)
 	if err := signingContext.SetSignatureMethod(signatureMethod); err != nil {
 		return err
 	}
@@ -1199,8 +1200,8 @@ func (sp *ServiceProvider) SignLogoutRequest(req *LogoutRequest) error {
 func (sp *ServiceProvider) MakeLogoutRequest(idpURL, nameID string) (*LogoutRequest, error) {
 
 	req := LogoutRequest{
-		ID:           fmt.Sprintf("id-%x", randomBytes(20)),
-		IssueInstant: TimeNow(),
+		ID:           fmt.Sprintf("id-%x", util.RandomBytes(20)),
+		IssueInstant: util.TimeNow(),
 		Version:      "2.0",
 		Destination:  idpURL,
 		Issuer: &Issuer{
@@ -1312,10 +1313,10 @@ func (r *LogoutRequest) Post(relayState string) []byte {
 // MakeLogoutResponse produces a new LogoutResponse object for idpURL and logoutRequestID.
 func (sp *ServiceProvider) MakeLogoutResponse(idpURL, logoutRequestID string) (*LogoutResponse, error) {
 	response := LogoutResponse{
-		ID:           fmt.Sprintf("id-%x", randomBytes(20)),
+		ID:           fmt.Sprintf("id-%x", util.RandomBytes(20)),
 		InResponseTo: logoutRequestID,
 		Version:      "2.0",
-		IssueInstant: TimeNow(),
+		IssueInstant: util.TimeNow(),
 		Destination:  idpURL,
 		Issuer: &Issuer{
 			Format: "urn:oasis:names:tc:SAML:2.0:nameid-format:entity",
@@ -1443,7 +1444,7 @@ func (sp *ServiceProvider) SignLogoutResponse(resp *LogoutResponse) error {
 	}
 	signatureMethod := sp.SignatureMethod
 	signingContext := dsig.NewDefaultSigningContext(keyStore)
-	signingContext.Canonicalizer = dsig.MakeC14N10ExclusiveCanonicalizerWithPrefixList(canonicalizerPrefixList)
+	signingContext.Canonicalizer = dsig.MakeC14N10ExclusiveCanonicalizerWithPrefixList(CanonicalizerPrefixList)
 	if err := signingContext.SetSignatureMethod(signatureMethod); err != nil {
 		return err
 	}
@@ -1465,8 +1466,8 @@ func (sp *ServiceProvider) nameIDFormat() string {
 	switch sp.AuthnNameIDFormat {
 	case "":
 		// To maintain library back-compat, use "transient" if unset.
-		nameIDFormat = string(TransientNameIDFormat)
-	case UnspecifiedNameIDFormat:
+		nameIDFormat = string(format.TransientNameIDFormat)
+	case format.UnspecifiedNameIDFormat:
 		// Spec defines an empty value as "unspecified" so don't set one.
 	default:
 		nameIDFormat = string(sp.AuthnNameIDFormat)
@@ -1491,7 +1492,7 @@ func (sp *ServiceProvider) ValidateLogoutResponseRequest(req *http.Request) erro
 // ValidateLogoutResponseForm returns a nil error if the logout response is valid.
 func (sp *ServiceProvider) ValidateLogoutResponseForm(postFormData string) error {
 	retErr := &InvalidResponseError{
-		Now: TimeNow(),
+		Now: util.TimeNow(),
 	}
 
 	rawResponseBuf, err := base64.StdEncoding.DecodeString(postFormData)
@@ -1531,7 +1532,7 @@ func (sp *ServiceProvider) ValidateLogoutResponseForm(postFormData string) error
 // See https://www.oasis-open.org/committees/download.php/20645/sstc-saml-tech-overview-2%200-draft-10.pdf  6.6
 func (sp *ServiceProvider) ValidateLogoutResponseRedirect(queryParameterData string) error {
 	retErr := &InvalidResponseError{
-		Now: TimeNow(),
+		Now: util.TimeNow(),
 	}
 
 	rawResponseBuf, err := base64.StdEncoding.DecodeString(queryParameterData)
@@ -1541,7 +1542,7 @@ func (sp *ServiceProvider) ValidateLogoutResponseRedirect(queryParameterData str
 	}
 	retErr.Response = string(rawResponseBuf)
 
-	gr, err := io.ReadAll(newSaferFlateReader(bytes.NewBuffer(rawResponseBuf)))
+	gr, err := io.ReadAll(util.NewSaferFlateReader(bytes.NewBuffer(rawResponseBuf)))
 	if err != nil {
 		retErr.PrivateErr = err
 		return retErr
