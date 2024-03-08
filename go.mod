@@ -13,7 +13,10 @@ require (
 	github.com/russellhaering/goxmldsig v1.4.0
 )
 
-require github.com/jonboulle/clockwork v0.2.2 // indirect
+require (
+	github.com/jonboulle/clockwork v0.2.2 // indirect
+	github.com/zenazn/goji v1.0.1 // indirect
+)
 
 require (
 	github.com/google/uuid v1.4.0 // indirect
