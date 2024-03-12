@@ -38,11 +38,11 @@ type Options struct {
 //	/shortcuts    - RESTful interface to Shortcut objects
 type Server struct {
 	http.Handler
-	idpConfigMu      sync.RWMutex // protects calls into the IDP
+	IdpConfigMu      sync.RWMutex // protects calls into the IDP
 	logger           logger.Interface
 	serviceProviders map[string]*EntityDescriptor
 	IDP              IdentityProvider // the underlying IDP
-	Store            data.Store                 // the data store
+	Store            data.Store       // the data store
 }
 
 // New returns a new Server
@@ -89,13 +89,13 @@ func (s *Server) InitializeHTTP() {
 	s.Handler = mux
 
 	mux.Get("/metadata", func(w http.ResponseWriter, r *http.Request) {
-		s.idpConfigMu.RLock()
-		defer s.idpConfigMu.RUnlock()
+		s.IdpConfigMu.RLock()
+		defer s.IdpConfigMu.RUnlock()
 		s.IDP.ServeMetadata(w, r)
 	})
 	mux.Handle("/sso", func(w http.ResponseWriter, r *http.Request) {
-		s.idpConfigMu.RLock()
-		defer s.idpConfigMu.RUnlock()
+		s.IdpConfigMu.RLock()
+		defer s.IdpConfigMu.RUnlock()
 		s.IDP.ServeSSO(w, r)
 	})
 

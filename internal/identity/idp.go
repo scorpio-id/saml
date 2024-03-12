@@ -13,10 +13,11 @@ import (
 
 type IDP struct {
 	// TODO - X509 needs to be unmarshaled into an x509 cert
-	leaf    		*x509.Certificate
-	intermediate 	*x509.Certificate
-	private 		*rsa.PrivateKey
-	client  		*pki.X509Client
+	// FIXME - Private should be lower case
+	Leaf    		*x509.Certificate
+	Intermediate 	*x509.Certificate
+	Private 		*rsa.PrivateKey
+	Client  		*pki.X509Client
 }
 
 func NewIDP(config *config.Config) (*IDP, error) {
@@ -70,10 +71,10 @@ func NewIDP(config *config.Config) (*IDP, error) {
 	}
 	
 	return &IDP {
-		leaf: leaf,
-		intermediate: intermediate,
-		private: private,
-		client: x509client,
+		Leaf: leaf,
+		Intermediate: intermediate,
+		Private: private,
+		Client: x509client,
 	}, nil
 }
 
@@ -81,13 +82,13 @@ func (idp *IDP) CertificateHandler(w http.ResponseWriter, r *http.Request) {
 
 	block := pem.Block{
 		Type:  "CERTIFICATE",
-		Bytes: idp.intermediate.Raw,
+		Bytes: idp.Intermediate.Raw,
 	}
 	pem.Encode(w, &block)
 
 	block = pem.Block{
 		Type:  "CERTIFICATE",
-		Bytes: idp.leaf.Raw,
+		Bytes: idp.Leaf.Raw,
 	}
 	pem.Encode(w, &block)
 }
