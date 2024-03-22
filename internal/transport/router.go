@@ -12,6 +12,7 @@ import (
 	"github.com/scorpio-id/saml/internal/identity"
 	"github.com/scorpio-id/saml/internal/logger"
 	"github.com/scorpio-id/saml/internal/provider"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // NewRouter creates a new mux router with applied SAML IDP configurations
@@ -50,31 +51,31 @@ func NewRouter(cfg config.Config) *mux.Router {
 	}
 
 	// TODO - leave out for now, example purposes
-	// hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("hunter2"), bcrypt.DefaultCost)
-	// err = idpServer.Store.Put("/users/alice", samlidp.User{Name: "alice",
-	// 	HashedPassword: hashedPassword,
-	// 	Groups:         []string{"Administrators", "Users"},
-	// 	Email:          "alice@example.com",
-	// 	CommonName:     "Alice Smith",
-	// 	Surname:        "Smith",
-	// 	GivenName:      "Alice",
-	// })
-	// if err != nil {
-	// 	logr.Fatalf("%s", err)
-	// }
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("hunter2"), bcrypt.DefaultCost)
+	err = s.Store.Put("/users/alice", provider.User{Name: "alice",
+		HashedPassword: hashedPassword,
+		Groups:         []string{"Administrators", "Users"},
+		Email:          "alice@example.com",
+		CommonName:     "Alice Smith",
+		Surname:        "Smith",
+		GivenName:      "Alice",
+	})
+	if err != nil {
+		logr.Fatalf("%s", err)
+	}
 
-	// err = idpServer.Store.Put("/users/bob", samlidp.User{
-	// 	Name:           "bob",
-	// 	HashedPassword: hashedPassword,
-	// 	Groups:         []string{"Users"},
-	// 	Email:          "bob@example.com",
-	// 	CommonName:     "Bob Smith",
-	// 	Surname:        "Smith",
-	// 	GivenName:      "Bob",
-	// })
-	// if err != nil {
-	// 	logr.Fatalf("%s", err)
-	// }
+	err = s.Store.Put("/users/bob", provider.User{
+		Name:           "bob",
+		HashedPassword: hashedPassword,
+		Groups:         []string{"Users"},
+		Email:          "bob@example.com",
+		CommonName:     "Bob Smith",
+		Surname:        "Smith",
+		GivenName:      "Bob",
+	})
+	if err != nil {
+		logr.Fatalf("%s", err)
+	}
 
 	router.HandleFunc("/certificate", idp.CertificateHandler).Methods(http.MethodGet, http.MethodOptions)
 
