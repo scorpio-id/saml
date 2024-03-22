@@ -20,7 +20,7 @@ func (s *MemoryStore) Get(key string, value interface{}) error {
 
 	v, ok := s.data[key]
 	if !ok {
-		return ErrorNotFound
+		return ErrNotFound
 	}
 	return json.Unmarshal([]byte(v), value)
 }

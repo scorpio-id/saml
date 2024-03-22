@@ -13,6 +13,16 @@ type Config struct {
 		Port string `yaml:"port"`
 		Host string `yaml:"host"`
 	} `yaml:"server"`
+	PKI struct {
+		Enabled bool     `yaml:"enabled"`
+		URL     string   `yaml:"url"`
+		SANs    []string `yaml:"sans"`
+	} `yaml:"pki"`
+	OAuth struct {
+		Enabled  bool   `yaml:"enabled"`
+		Issuer   string `yaml:"issuer"`
+		ClientID string `yaml:"client_id"`
+	} `yaml:"oauth"`
 }
 
 // NewConfig takes a .yml filename from the same /config directory, and returns a populated configuration

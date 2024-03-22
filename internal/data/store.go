@@ -2,7 +2,8 @@ package data
 
 import "errors"
 
-var ErrorNotFound = errors.New("not found")
+
+var ErrNotFound = errors.New("not found")
 
 type Store interface{
 	// Get fetches the data stored in `key` and unmarshals it into `value`.
