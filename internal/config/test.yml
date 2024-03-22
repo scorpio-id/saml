@@ -1,0 +1,13 @@
+# server configurations
+server:
+  host: "http://127.0.0.1"
+  port: 8084
+pki:
+  enabled: false
+  url: "http://localhost:8081"
+  sans:
+    - "idp.scorpio.io"
+oauth:
+  enabled: false
+  issuer: "http://localhost:8082"
+  client_id: "scorpio"
