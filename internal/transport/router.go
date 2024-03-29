@@ -29,7 +29,9 @@ func NewRouter(cfg config.Config) *mux.Router {
 	}
 
 	logr := logger.DefaultLogger
-	baseURLstr := flag.String("idp", "", "The URL to the IDP")
+	
+	// FIXME - pull IDP name from configuration!
+	baseURLstr := flag.String("idp", "http://localhost:8084", "The URL to the IDP")
 	flag.Parse()
 
 	baseURL, err := url.Parse(*baseURLstr)
