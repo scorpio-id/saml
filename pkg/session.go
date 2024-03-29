@@ -1,4 +1,4 @@
-package service
+package pkg
 
 import (
 	"context"
@@ -10,22 +10,6 @@ import (
 
 // Session is an interface implemented to contain a session.
 type Session interface{}
-
-// Attributes is a map of attributes provided in the SAML assertion
-type Attributes map[string][]string
-
-// Get returns the first attribute named `key` or an empty string if
-// no such attributes is present.
-func (a Attributes) Get(key string) string {
-	if a == nil {
-		return ""
-	}
-	v := a[key]
-	if len(v) == 0 {
-		return ""
-	}
-	return v[0]
-}
 
 // SessionWithAttributes is a session that can expose the
 // attributes provided by the SAML identity provider.
