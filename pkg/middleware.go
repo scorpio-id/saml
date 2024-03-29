@@ -46,7 +46,7 @@ type Middleware struct {
 	Binding         string // either saml.HTTPPostBinding or saml.HTTPRedirectBinding
 	ResponseBinding string // either saml.HTTPPostBinding or saml.HTTPArtifactBinding
 	RequestTracker  service.RequestTracker
-	Session         service.SessionProvider
+	Session         SessionProvider
 }
 
 // ServeHTTP implements http.Handler and serves the SAML-specific HTTP endpoints
@@ -111,11 +111,11 @@ func (m *Middleware) RequireAccount(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, err := m.Session.GetSession(r)
 		if session != nil {
-			r = r.WithContext(service.ContextWithSession(r.Context(), session))
+			r = r.WithContext(ContextWithSession(r.Context(), session))
 			handler.ServeHTTP(w, r)
 			return
 		}
-		if err == service.ErrNoSession {
+		if err == ErrNoSession {
 			m.HandleStartAuthFlow(w, r)
 			return
 		}
@@ -235,9 +235,9 @@ func (m *Middleware) CreateSessionFromAssertion(w http.ResponseWriter, r *http.R
 func RequireAttribute(name, value string) func(http.Handler) http.Handler {
 	return func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if session := service.SessionFromContext(r.Context()); session != nil {
+			if session := SessionFromContext(r.Context()); session != nil {
 				// this will panic if we have the wrong type of Session, and that is OK.
-				sessionWithAttributes := session.(service.SessionWithAttributes)
+				sessionWithAttributes := session.(SessionWithAttributes)
 				attributes := sessionWithAttributes.GetAttributes()
 				if values, ok := attributes[name]; ok {
 					for _, v := range values {
