@@ -56,7 +56,7 @@ func NewRouter(cfg config.Config) *mux.Router {
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("hunter2"), bcrypt.DefaultCost)
 	err = s.Store.Put("/users/alice", provider.User{Name: "alice",
 		HashedPassword: hashedPassword,
-		Groups:         []string{"Administrators", "Users"},
+		Groups:         []string{"Users"},
 		Email:          "alice@example.com",
 		CommonName:     "Alice Smith",
 		Surname:        "Smith",
@@ -74,6 +74,21 @@ func NewRouter(cfg config.Config) *mux.Router {
 		CommonName:     "Bob Smith",
 		Surname:        "Smith",
 		GivenName:      "Bob",
+	})
+	if err != nil {
+		logr.Fatalf("%s", err)
+	}
+
+	// FIXME - should be API call to component 3, using test account below
+	hashedPassword2, _ := bcrypt.GenerateFromPassword([]byte("resetme"), bcrypt.DefaultCost)
+	err = s.Store.Put("/users/scorpio", provider.User{
+		Name:           "scorpio",
+		HashedPassword: hashedPassword2,
+		Groups:         []string{"Administrators", "Users"},
+		Email:          "scorpio@scorpio.io",
+		CommonName:     "Scorpio",
+		Surname:        "Identity",
+		GivenName:      "scorpio",
 	})
 	if err != nil {
 		logr.Fatalf("%s", err)
